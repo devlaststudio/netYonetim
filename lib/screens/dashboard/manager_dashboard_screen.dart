@@ -81,73 +81,84 @@ class ManagerDashboardScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Welcome section
-              Text(
-                'Hoş geldin, ${user?.firstName ?? "Yönetici"}! 👋',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 4),
-              InkWell(
-                onTap: provider.managedSites.length > 1
-                    ? () {
-                        Navigator.of(
-                          context,
-                        ).pushReplacementNamed('/site-selection');
-                      }
-                    : null,
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.location_city,
-                      size: 16,
-                      color: AppColors.textSecondary,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      provider.selectedSiteName,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    if (provider.managedSites.length > 1) ...[
-                      const SizedBox(width: 4),
-                      const Icon(
-                        Icons.swap_horiz,
-                        size: 16,
-                        color: AppColors.primary,
-                      ),
-                    ],
-                    const SizedBox(width: 8),
-                    Text(
-                      '• ${user?.roleDisplayName ?? ""}',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // Staff contact cards
+              // Welcome section + Staff contacts
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Left: Welcome text
                   Expanded(
-                    child: _StaffContactCard(
-                      role: 'Site Görevlisi',
-                      name: 'Ali Demir',
-                      phone: '0532 111 22 33',
-                      icon: Icons.engineering,
-                      color: AppColors.primary,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Hoş geldin, ${user?.firstName ?? "Yönetici"}! 👋',
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                        const SizedBox(height: 4),
+                        InkWell(
+                          onTap: provider.managedSites.length > 1
+                              ? () {
+                                  Navigator.of(
+                                    context,
+                                  ).pushReplacementNamed('/site-selection');
+                                }
+                              : null,
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.location_city,
+                                size: 16,
+                                color: AppColors.textSecondary,
+                              ),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  provider.selectedSiteName,
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(fontWeight: FontWeight.w500),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (provider.managedSites.length > 1) ...[
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.swap_horiz,
+                                  size: 16,
+                                  color: AppColors.primary,
+                                ),
+                              ],
+                              const SizedBox(width: 6),
+                              Text(
+                                '• ${user?.roleDisplayName ?? ""}',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _StaffContactCard(
-                      role: 'Güvenlik',
-                      name: 'Hasan Kara',
-                      phone: '0533 444 55 66',
-                      icon: Icons.shield_outlined,
-                      color: AppColors.secondary,
-                    ),
+                  const SizedBox(width: 8),
+                  // Right: Mini staff contacts
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      _MiniStaffChip(
+                        role: 'Görevli',
+                        name: 'Ali Demir',
+                        phone: '0532 111 22 33',
+                        icon: Icons.engineering,
+                        color: AppColors.primary,
+                      ),
+                      const SizedBox(height: 6),
+                      _MiniStaffChip(
+                        role: 'Güvenlik',
+                        name: 'Hasan Kara',
+                        phone: '0533 444 55 66',
+                        icon: Icons.shield_outlined,
+                        color: AppColors.secondary,
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -275,6 +286,30 @@ class ManagerDashboardScreen extends StatelessWidget {
                     onTap: () => Navigator.of(context).pushNamed('/polls'),
                   ),
                 ],
+              ),
+              const SizedBox(height: 24),
+
+              // Yaklaşan Ödemeler
+              _SectionHeader(
+                title: '💰 Yaklaşan Ödemeler',
+                actionText: 'Tümü',
+                onAction: () => Navigator.of(context).pushNamed('/dues'),
+              ),
+              const SizedBox(height: 12),
+              _UpcomingPaymentCard(
+                title: 'Şubat 2026 Aidat',
+                dueDate: '15 Şub 2026',
+                amount: '₺2.500',
+                unitInfo: 'A Blok - 12 Daire',
+                isUrgent: false,
+              ),
+              const SizedBox(height: 8),
+              _UpcomingPaymentCard(
+                title: 'Asansör Bakım Ücreti',
+                dueDate: '20 Şub 2026',
+                amount: '₺8.750',
+                unitInfo: 'Genel Gider',
+                isUrgent: true,
               ),
               const SizedBox(height: 24),
 
@@ -588,14 +623,14 @@ class _TicketCard extends StatelessWidget {
   }
 }
 
-class _StaffContactCard extends StatelessWidget {
+class _MiniStaffChip extends StatelessWidget {
   final String role;
   final String name;
   final String phone;
   final IconData icon;
   final Color color;
 
-  const _StaffContactCard({
+  const _MiniStaffChip({
     required this.role,
     required this.name,
     required this.phone,
@@ -613,61 +648,146 @@ class _StaffContactCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.15)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 4),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '$role: $name',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: 6),
+          InkWell(
+            onTap: () => _makePhoneCall(phone),
+            child: Container(
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                color: AppColors.success.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Icon(Icons.phone, size: 12, color: AppColors.success),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _UpcomingPaymentCard extends StatelessWidget {
+  final String title;
+  final String dueDate;
+  final String amount;
+  final String unitInfo;
+  final bool isUrgent;
+
+  const _UpcomingPaymentCard({
+    required this.title,
+    required this.dueDate,
+    required this.amount,
+    required this.unitInfo,
+    required this.isUrgent,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Card(
       elevation: 0,
+      margin: const EdgeInsets.only(bottom: 0),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppColors.border),
+        side: BorderSide(
+          color: isUrgent
+              ? AppColors.warning.withValues(alpha: 0.4)
+              : AppColors.border,
+        ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.all(14),
+        child: Row(
           children: [
-            Row(
-              children: [
-                Icon(icon, size: 16, color: color),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    role,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: color,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
+            // Left icon
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: isUrgent
+                    ? AppColors.warning.withValues(alpha: 0.1)
+                    : AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                isUrgent ? Icons.schedule : Icons.receipt_long_outlined,
+                color: isUrgent ? AppColors.warning : AppColors.primary,
+                size: 22,
+              ),
             ),
-            const SizedBox(height: 6),
-            Text(
-              name,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 4),
-            InkWell(
-              onTap: () => _makePhoneCall(phone),
-              child: Row(
+            const SizedBox(width: 12),
+            // Middle info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.phone, size: 14, color: AppColors.success),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      phone,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.success,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      overflow: TextOverflow.ellipsis,
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
                     ),
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.calendar_today,
+                        size: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        dueDate,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isUrgent
+                              ? AppColors.warning
+                              : AppColors.textSecondary,
+                          fontWeight: isUrgent
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '• $unitInfo',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
                   ),
                 ],
+              ),
+            ),
+            // Right amount
+            Text(
+              amount,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: isUrgent ? AppColors.warning : AppColors.primary,
               ),
             ),
           ],
