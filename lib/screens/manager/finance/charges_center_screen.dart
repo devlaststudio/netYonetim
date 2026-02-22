@@ -8,6 +8,7 @@ import '../../../data/mock/manager_finance_mock_data.dart';
 import '../../../data/models/manager/manager_models.dart';
 import '../../../data/providers/manager_finance_provider.dart';
 import '../shared/manager_common_widgets.dart';
+import 'charges_tracking_screen.dart';
 
 class ChargesCenterScreen extends StatefulWidget {
   const ChargesCenterScreen({super.key});
@@ -170,6 +171,7 @@ class _ChargesCenterScreenState extends State<ChargesCenterScreen> {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          _buildTrackingShortcutCard(),
           if (!isDesktop)
             ManagerSectionCard(
               title: 'Secili Borclandirma Yontemi',
@@ -701,32 +703,46 @@ class _ChargesCenterScreenState extends State<ChargesCenterScreen> {
                   child: Padding(
                     padding: EdgeInsets.only(left: 16),
                     child: Text(
-                      'Yontem Menusu',
+                      'Yönetim Menüsü',
                       style: TextStyle(
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
                         color: AppColors.textPrimary,
                       ),
                     ),
-                  ),
-                ),
-              if (isDesktop)
-                IconButton(
-                  tooltip: _isMethodDrawerExpanded ? 'Daralt' : 'Genislet',
-                  onPressed: () {
-                    setState(() {
-                      _isMethodDrawerExpanded = !_isMethodDrawerExpanded;
-                    });
-                  },
-                  icon: Icon(
-                    _isMethodDrawerExpanded
-                        ? Icons.keyboard_double_arrow_left
-                        : Icons.keyboard_double_arrow_right,
                   ),
                 ),
             ],
           ),
         ),
         const Divider(height: 1),
+        _buildMenuActionTile(
+          icon: Icons.track_changes,
+          label: 'Borclandirma Takip',
+          showLabels: showLabels,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ChargesTrackingScreen(),
+              ),
+            );
+          },
+        ),
+        const Divider(height: 1),
+        if (showLabels)
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Text(
+              'HIZLI YONTEMLER',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textSecondary,
+                letterSpacing: 1.2,
+              ),
+            ),
+          ),
         Expanded(
           child: Padding(
             padding: EdgeInsets.all(showLabels ? 12 : 8),
@@ -798,6 +814,122 @@ class _ChargesCenterScreenState extends State<ChargesCenterScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildTrackingShortcutCard() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ChargesTrackingScreen(),
+              ),
+            );
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.history_toggle_off,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Zamanlanmış İşlemleri Takip Edin',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      Text(
+                        'Otomatik borçlandırma kurallarını yönetin',
+                        style: TextStyle(color: Colors.white70, fontSize: 13),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_ios,
+                  color: Colors.white,
+                  size: 16,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuActionTile({
+    required IconData icon,
+    required String label,
+    required bool showLabels,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        height: 54,
+        padding: EdgeInsets.symmetric(horizontal: showLabels ? 16 : 0),
+        child: Row(
+          mainAxisAlignment: showLabels
+              ? MainAxisAlignment.start
+              : MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: AppColors.primary, size: 24),
+            if (showLabels) ...[
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right,
+                size: 18,
+                color: AppColors.textTertiary,
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 

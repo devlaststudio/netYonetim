@@ -92,6 +92,7 @@ class ManagerFinanceProvider extends ChangeNotifier {
     required ChargeDistributionType distribution,
     required String period,
     required DateTime dueDate,
+    DateTime? accrualDate,
     required double amount,
     Map<String, String> methodParameters = const {},
   }) async {
@@ -115,6 +116,7 @@ class ManagerFinanceProvider extends ChangeNotifier {
       targetIds: items.map((item) => item.unitId).toList(),
       period: period,
       dueDate: dueDate,
+      accrualDate: accrualDate,
       items: items,
       status: ChargeBatchStatus.posted,
       createdAt: DateTime.now(),
@@ -194,10 +196,7 @@ class ManagerFinanceProvider extends ChangeNotifier {
         calculationMethod: ChargeCalculationMethod.equalShare,
         scope: rule.scope,
         distributionType: rule.distributionType,
-        methodParameters: {
-          'kaynak': 'Otomatik Kural',
-          'kural': rule.name,
-        },
+        methodParameters: {'kaynak': 'Otomatik Kural', 'kural': rule.name},
         targetIds: items.map((item) => item.unitId).toList(),
         period: period,
         dueDate: DateTime(now.year, now.month, rule.dueDay),
@@ -420,8 +419,9 @@ class ManagerFinanceProvider extends ChangeNotifier {
   }
 
   Future<void> matchBankMovement(String movementId, String reference) async {
-    final index =
-        _bankMovements.indexWhere((movement) => movement.id == movementId);
+    final index = _bankMovements.indexWhere(
+      (movement) => movement.id == movementId,
+    );
     if (index == -1) {
       return;
     }
@@ -436,8 +436,9 @@ class ManagerFinanceProvider extends ChangeNotifier {
   }
 
   Future<void> ignoreBankMovement(String movementId) async {
-    final index =
-        _bankMovements.indexWhere((movement) => movement.id == movementId);
+    final index = _bankMovements.indexWhere(
+      (movement) => movement.id == movementId,
+    );
     if (index == -1) {
       return;
     }
@@ -471,8 +472,9 @@ class ManagerFinanceProvider extends ChangeNotifier {
   }
 
   Future<void> cancelCashMovement(String movementId) async {
-    final index =
-        _cashMovements.indexWhere((movement) => movement.id == movementId);
+    final index = _cashMovements.indexWhere(
+      (movement) => movement.id == movementId,
+    );
     if (index == -1) {
       return;
     }
@@ -498,10 +500,7 @@ class ManagerFinanceProvider extends ChangeNotifier {
         .toList();
   }
 
-  DateTime _nextRunFromFrequency(
-    SchedulerFrequency frequency,
-    DateTime from,
-  ) {
+  DateTime _nextRunFromFrequency(SchedulerFrequency frequency, DateTime from) {
     switch (frequency) {
       case SchedulerFrequency.daily:
         return from.add(const Duration(days: 1));

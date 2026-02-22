@@ -9,12 +9,7 @@ enum ChargeScope {
   budgetBased,
 }
 
-enum ChargeDistributionType {
-  equal,
-  sqm,
-  fixed,
-  custom,
-}
+enum ChargeDistributionType { equal, sqm, fixed, custom }
 
 enum ChargeMainType {
   dues,
@@ -37,108 +32,37 @@ enum ChargeCalculationMethod {
   equalShare,
 }
 
-enum ChargeBatchStatus {
-  draft,
-  posted,
-  cancelled,
-}
+enum ChargeBatchStatus { draft, posted, cancelled }
 
-enum AllocationMode {
-  oldestFirst,
-  newestFirst,
-  manual,
-}
+enum AllocationMode { oldestFirst, newestFirst, manual }
 
-enum CollectionStatus {
-  draft,
-  approved,
-  cancelled,
-}
+enum CollectionStatus { draft, approved, cancelled }
 
-enum ExpensePaymentStatus {
-  draft,
-  approved,
-  paid,
-  cancelled,
-}
+enum ExpensePaymentStatus { draft, approved, paid, cancelled }
 
-enum TransferStatus {
-  pending,
-  completed,
-  failed,
-  cancelled,
-}
+enum TransferStatus { pending, completed, failed, cancelled }
 
-enum MovementDirection {
-  incoming,
-  outgoing,
-}
+enum MovementDirection { incoming, outgoing }
 
-enum MatchStatus {
-  unmatched,
-  suggested,
-  matched,
-  ignored,
-}
+enum MatchStatus { unmatched, suggested, matched, ignored }
 
-enum NotificationChannel {
-  app,
-  sms,
-  email,
-  whatsapp,
-}
+enum NotificationChannel { app, sms, email, whatsapp }
 
-enum TaskPriority {
-  low,
-  medium,
-  high,
-  urgent,
-}
+enum TaskPriority { low, medium, high, urgent }
 
-enum TaskStatus {
-  open,
-  inProgress,
-  completed,
-  cancelled,
-}
+enum TaskStatus { open, inProgress, completed, cancelled }
 
-enum MeterType {
-  hotWater,
-  coldWater,
-  electricity,
-  heatShare,
-}
+enum MeterType { hotWater, coldWater, electricity, heatShare }
 
-enum MeterReadingStatus {
-  draft,
-  approved,
-  billed,
-}
+enum MeterReadingStatus { draft, approved, billed }
 
-enum StaffRoleType {
-  manager,
-  accountant,
-  security,
-  cleaning,
-  technical,
-}
+enum StaffRoleType { manager, accountant, security, cleaning, technical }
 
-enum LegacyOccupancyType {
-  owner,
-  tenant,
-}
+enum LegacyOccupancyType { owner, tenant }
 
-enum SchedulerFrequency {
-  daily,
-  weekly,
-  monthly,
-}
+enum SchedulerFrequency { daily, weekly, monthly }
 
-enum ImportRowStatus {
-  valid,
-  warning,
-  error,
-}
+enum ImportRowStatus { valid, warning, error }
 
 enum ReportTypeKey {
   cashStatus,
@@ -179,6 +103,7 @@ class ChargeBatch {
   final List<String> targetIds;
   final String period;
   final DateTime dueDate;
+  final DateTime? accrualDate;
   final List<ChargeItem> items;
   final ChargeBatchStatus status;
   final DateTime createdAt;
@@ -194,6 +119,7 @@ class ChargeBatch {
     required this.targetIds,
     required this.period,
     required this.dueDate,
+    this.accrualDate,
     required this.items,
     required this.status,
     required this.createdAt,
@@ -213,6 +139,7 @@ class ChargeBatch {
     List<String>? targetIds,
     String? period,
     DateTime? dueDate,
+    DateTime? accrualDate,
     List<ChargeItem>? items,
     ChargeBatchStatus? status,
     DateTime? createdAt,
@@ -228,6 +155,7 @@ class ChargeBatch {
       targetIds: targetIds ?? this.targetIds,
       period: period ?? this.period,
       dueDate: dueDate ?? this.dueDate,
+      accrualDate: accrualDate ?? this.accrualDate,
       items: items ?? this.items,
       status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
@@ -1105,7 +1033,7 @@ extension ChargeMainTypeLabel on ChargeMainType {
       case ChargeMainType.operating:
         return Icons.settings_suggest_outlined;
       case ChargeMainType.reserveFund:
-        return Icons.savings_outlined;
+        return Icons.account_balance_outlined;
       case ChargeMainType.other:
         return Icons.category_outlined;
     }
