@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'core/theme/app_theme.dart';
 import 'data/providers/app_provider.dart';
 import 'data/providers/accounting_provider.dart';
+import 'data/providers/manager_finance_provider.dart';
+import 'data/providers/manager_ops_provider.dart';
+import 'data/providers/manager_reports_provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/site_selection_screen.dart';
 import 'screens/home_screen.dart';
@@ -29,6 +33,25 @@ import 'screens/more/management_screen.dart';
 import 'screens/more/staff_screen.dart';
 import 'screens/more/polls_screen.dart';
 import 'screens/more/service_records_screen.dart';
+import 'screens/manager/finance/charges_center_screen.dart';
+import 'screens/manager/finance/collections_center_screen.dart';
+import 'screens/manager/finance/cash_expenses_screen.dart';
+import 'screens/manager/finance/transfers_screen.dart';
+import 'screens/manager/finance/bank_reconciliation_screen.dart';
+import 'screens/manager/finance/accrual_movements_screen.dart';
+import 'screens/manager/finance/cash_movements_screen.dart';
+import 'screens/manager/finance/unit_statement_screen.dart';
+import 'screens/manager/finance/vendor_statement_screen.dart';
+import 'screens/manager/finance/charges_wizard_codex_screen.dart';
+import 'screens/manager/reports/bulk_reports_screen.dart';
+import 'screens/manager/ops/notifications_center_screen.dart';
+import 'screens/manager/ops/site_settings_screen.dart';
+import 'screens/manager/ops/staff_roles_screen.dart';
+import 'screens/manager/ops/task_tracking_screen.dart';
+import 'screens/manager/ops/decision_book_screen.dart';
+import 'screens/manager/ops/file_archive_screen.dart';
+import 'screens/manager/ops/meter_reading_screen.dart';
+import 'screens/manager/ops/legacy_members_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -56,12 +79,21 @@ class SiteYonetApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AppProvider()),
         ChangeNotifierProvider(create: (_) => AccountingProvider()),
+        ChangeNotifierProvider(create: (_) => ManagerFinanceProvider()),
+        ChangeNotifierProvider(create: (_) => ManagerOpsProvider()),
+        ChangeNotifierProvider(create: (_) => ManagerReportsProvider()),
       ],
       child: Consumer<AppProvider>(
         builder: (context, provider, _) {
           return MaterialApp(
             title: 'SiteYönet Pro',
             debugShowCheckedModeBanner: false,
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [Locale('tr', 'TR'), Locale('en', 'US')],
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: ThemeMode.light,
@@ -92,6 +124,35 @@ class SiteYonetApp extends StatelessWidget {
               '/accounting/budget': (context) => const BudgetScreen(),
               '/accounting/reports': (context) =>
                   const accounting_reports.ReportsScreen(),
+              // Manager module routes
+              '/manager/charges': (context) => const ChargesCenterScreen(),
+              '/manager/collections': (context) =>
+                  const CollectionsCenterScreen(),
+              '/manager/cash-expenses': (context) => const CashExpensesScreen(),
+              '/manager/transfers': (context) => const TransfersScreen(),
+              '/manager/bank-reconciliation': (context) =>
+                  const BankReconciliationScreen(),
+              '/manager/accrual-movements': (context) =>
+                  const AccrualMovementsScreen(),
+              '/manager/cash-movements': (context) =>
+                  const CashMovementsScreen(),
+              '/manager/statement-unit': (context) =>
+                  const UnitStatementScreen(),
+              '/manager/statement-vendor': (context) =>
+                  const VendorStatementScreen(),
+              '/manager/charges-wizard-codex': (context) =>
+                  const ChargesWizardCodexScreen(),
+              '/manager/bulk-reports': (context) => const BulkReportsScreen(),
+              '/manager/notifications': (context) =>
+                  const NotificationsCenterScreen(),
+              '/manager/site-settings': (context) => const SiteSettingsScreen(),
+              '/manager/staff-roles': (context) => const StaffRolesScreen(),
+              '/manager/task-tracking': (context) => const TaskTrackingScreen(),
+              '/manager/decision-book': (context) => const DecisionBookScreen(),
+              '/manager/file-archive': (context) => const FileArchiveScreen(),
+              '/manager/meter-reading': (context) => const MeterReadingScreen(),
+              '/manager/legacy-members': (context) =>
+                  const LegacyMembersScreen(),
             },
             // Handle auth state changes
             onGenerateRoute: (settings) {

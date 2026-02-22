@@ -14,7 +14,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController(text: 'demo@siteyonet.com');
+  final _emailController = TextEditingController(text: 'admin@siteyonet.com');
   final _passwordController = TextEditingController(text: '123456');
   bool _obscurePassword = true;
   bool _rememberMe = true;
@@ -195,57 +195,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           : const Text('Giriş Yap'),
                     ),
                   ),
-                  const SizedBox(height: 24),
-
-                  // Divider
-                  Row(
-                    children: [
-                      const Expanded(child: Divider()),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          'veya',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ),
-                      const Expanded(child: Divider()),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Social login buttons
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Google ile giriş yapılıyor...'),
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.g_mobiledata, size: 28),
-                          label: const Text('Google'),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Apple ile giriş yapılıyor...'),
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.apple, size: 24),
-                          label: const Text('Apple'),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 32),
 
                   // Register link
                   Row(

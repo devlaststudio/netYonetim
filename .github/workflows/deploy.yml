@@ -1,0 +1,64 @@
+# Flutter Web → GitHub Pages Otomatik Deploy
+# main branch'e her push yapıldığında çalışır
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  # Manuel tetikleme desteği
+  workflow_dispatch:
+
+# GitHub Pages'a yazma izni
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Aynı anda birden fazla deploy engelle
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Repo'yu çek
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. Flutter SDK kur
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      # 3. Bağımlılıkları yükle
+      - name: Install Dependencies
+        run: flutter pub get
+
+      # 4. Web build al (base-href repo adıyla)
+      - name: Build Web
+        run: flutter build web --release --base-href "/netYonetim/"
+
+      # 5. GitHub Pages artifact olarak yükle
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

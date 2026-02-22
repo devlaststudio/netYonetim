@@ -15,302 +15,491 @@ class DashboardScreen extends StatelessWidget {
     final currencyFormat = NumberFormat.currency(locale: 'tr_TR', symbol: '₺');
 
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(
-                Icons.apartment_rounded,
-                color: Colors.white,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 12),
-            const Text('SiteYönet Pro'),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: Stack(
+      backgroundColor: Colors.grey[50],
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            pinned: true,
+            backgroundColor: AppColors.primary,
+            elevation: 0,
+            titleSpacing: 24,
+            leading: null,
+            automaticallyImplyLeading: false, // Hide back button if any
+            title: Row(
               children: [
-                const Icon(Icons.notifications_outlined),
-                if (provider.unreadAnnouncementsCount > 0)
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: Container(
-                      width: 16,
-                      height: 16,
-                      decoration: const BoxDecoration(
-                        color: AppColors.error,
-                        shape: BoxShape.circle,
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      user?.firstName.substring(0, 1) ?? 'K',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
-                      child: Center(
-                        child: Text(
-                          '${provider.unreadAnnouncementsCount}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Hoş Geldiniz,',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    Text(
+                      '${user?.firstName} ${user?.lastName}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              IconButton(
+                icon: Stack(
+                  children: [
+                    const Icon(
+                      Icons.notifications_rounded,
+                      color: Colors.white,
+                      size: 26,
+                    ),
+                    if (provider.unreadAnnouncementsCount > 0)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          width: 10,
+                          height: 10,
+                          decoration: const BoxDecoration(
+                            color: AppColors.error,
+                            shape: BoxShape.circle,
                           ),
                         ),
                       ),
-                    ),
-                  ),
-              ],
-            ),
-            onPressed: () {
-              Navigator.of(context).pushNamed('/announcements');
-            },
+                  ],
+                ),
+                onPressed: () =>
+                    Navigator.of(context).pushNamed('/announcements'),
+              ),
+              const SizedBox(width: 16),
+            ],
           ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: provider.refreshData,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Welcome section
-              Text(
-                'Hoş geldin, ${user?.firstName ?? "Kullanıcı"}! 👋',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '${MockData.siteName} - ${user?.unitDisplay ?? ""}',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 24),
-
-              // Summary cards
-              Row(
-                children: [
-                  Expanded(
-                    child: _SummaryCard(
-                      icon: Icons.account_balance_wallet,
-                      iconColor: AppColors.error,
-                      title: 'BORÇ',
-                      value: currencyFormat.format(provider.totalDebt),
-                      subtitle: '${provider.openDues.length} adet bekleyen',
-                      buttonText: 'ÖDE',
-                      onButtonPressed: provider.openDues.isEmpty
-                          ? null
-                          : () => Navigator.of(context).pushNamed('/dues'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _SummaryCard(
-                      icon: Icons.check_circle,
-                      iconColor: AppColors.success,
-                      title: 'ÖDENDİ',
-                      value: currencyFormat.format(provider.totalPaid),
-                      subtitle: '${provider.paidDues.length} ödeme',
-                      buttonText: 'Görüntüle',
-                      onButtonPressed: () =>
-                          Navigator.of(context).pushNamed('/payments'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              // Overdue warning
-              if (provider.overdueDues.isNotEmpty) ...[
+          SliverToBoxAdapter(
+            child: Stack(
+              children: [
+                // Blue background extension behind the card
                 Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.error.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppColors.error.withValues(alpha: 0.3),
+                  height: 100, // Extends the blue area down
+                  decoration: const BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(30),
+                      bottomRight: Radius.circular(30),
                     ),
                   ),
-                  child: Row(
+                ),
+                // Content: Site Info + Card
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(
-                        Icons.warning_amber_rounded,
-                        color: AppColors.error,
-                        size: 32,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      // Site Info Text inside the blue area
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 24, left: 4),
+                        child: Row(
                           children: [
-                            Text(
-                              '${provider.overdueDues.length} Gecikmiş Borç',
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(
-                                    color: AppColors.error,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                            const Icon(
+                              Icons.apartment_rounded,
+                              color: Colors.white70,
+                              size: 18,
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(width: 8),
                             Text(
-                              'Gecikme tazminatı işlemektedir',
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: AppColors.error),
+                              '${MockData.siteName}, ${user?.unitDisplay ?? ""}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ],
                         ),
                       ),
-                      TextButton(
-                        onPressed: () =>
+
+                      // Debt Summary Card (Overlaps the bottom of blue area)
+                      _DebtSummaryCard(
+                        totalDebt: provider.totalDebt,
+                        currencyFormat: currencyFormat,
+                        onPayNow: () =>
                             Navigator.of(context).pushNamed('/dues'),
-                        child: const Text('Öde'),
+                        onHistory: () =>
+                            Navigator.of(context).pushNamed('/payments'),
                       ),
+
+                      const SizedBox(height: 24),
+
+                      // Quick Actions
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _QuickActionItem(
+                            icon: Icons.build_rounded,
+                            label: 'Talep',
+                            color: Colors.orange.shade100,
+                            iconColor: Colors.deepOrange,
+                            onTap: () =>
+                                Navigator.of(context).pushNamed('/tickets'),
+                          ),
+                          _QuickActionItem(
+                            icon: Icons.poll_rounded,
+                            label: 'Anket',
+                            color: Colors.purple.shade100,
+                            iconColor: Colors.purple,
+                            onTap: () =>
+                                Navigator.of(context).pushNamed('/polls'),
+                          ),
+                          _QuickActionItem(
+                            icon: Icons.calendar_today_rounded,
+                            label: 'Rezerve',
+                            color: Colors.teal.shade100,
+                            iconColor: Colors.teal,
+                            onTap: () => Navigator.of(
+                              context,
+                            ).pushNamed('/reservations'),
+                          ),
+                          _QuickActionItem(
+                            icon: Icons.description_rounded,
+                            label: 'Raporlar',
+                            color: Colors.blue.shade100,
+                            iconColor: Colors.blue.shade800,
+                            onTap: () =>
+                                Navigator.of(context).pushNamed('/reports'),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Overdue Warning
+                      if (provider.overdueDues.isNotEmpty) ...[
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: AppColors.error.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: AppColors.error.withValues(alpha: 0.3),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.warning_amber_rounded,
+                                color: AppColors.error,
+                                size: 32,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '${provider.overdueDues.length} Gecikmiş Borç',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
+                                            color: AppColors.error,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Gecikme tazminatı işlemektedir',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(color: AppColors.error),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pushNamed('/dues'),
+                                child: const Text('Öde'),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+
+                      // Announcements
+                      Column(
+                        children: [
+                          _SectionHeader(
+                            title: 'Duyurular',
+                            actionText: 'Tümü',
+                            onAction: () => Navigator.of(
+                              context,
+                            ).pushNamed('/announcements'),
+                          ),
+                          const SizedBox(height: 12),
+                          if (provider.announcements.isEmpty)
+                            const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(16),
+                                child: Text('Henüz duyuru bulunmamaktadır.'),
+                              ),
+                            )
+                          else
+                            ...provider.announcements.take(2).map((
+                              announcement,
+                            ) {
+                              return _AnnouncementCard(
+                                announcement: announcement,
+                                onTap: () {
+                                  provider.markAnnouncementAsRead(
+                                    announcement.id,
+                                  );
+                                  Navigator.of(
+                                    context,
+                                  ).pushNamed('/announcements');
+                                },
+                              );
+                            }),
+                        ],
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Recent Tickets Section
+                      if (provider.tickets.isNotEmpty) ...[
+                        Column(
+                          children: [
+                            _SectionHeader(
+                              title: 'Son Talepler',
+                              actionText: 'Tümü',
+                              onAction: () =>
+                                  Navigator.of(context).pushNamed('/tickets'),
+                            ),
+                            const SizedBox(height: 12),
+                            ...provider.tickets.take(2).map((ticket) {
+                              return _TicketCard(ticket: ticket);
+                            }),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                      ],
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
               ],
-
-              // Announcements section
-              _SectionHeader(
-                title: '📢 Son Duyurular',
-                actionText: 'Tümü',
-                onAction: () =>
-                    Navigator.of(context).pushNamed('/announcements'),
-              ),
-              const SizedBox(height: 12),
-              ...provider.announcements.take(2).map((announcement) {
-                return _AnnouncementCard(
-                  announcement: announcement,
-                  onTap: () {
-                    provider.markAnnouncementAsRead(announcement.id);
-                    Navigator.of(context).pushNamed('/announcements');
-                  },
-                );
-              }),
-              const SizedBox(height: 24),
-
-              // Quick actions
-              Text(
-                '⚡ Hızlı İşlemler',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _QuickActionButton(
-                    icon: Icons.payment,
-                    label: 'Öde',
-                    onTap: () => Navigator.of(context).pushNamed('/dues'),
-                  ),
-                  _QuickActionButton(
-                    icon: Icons.edit_note,
-                    label: 'Talep',
-                    onTap: () => Navigator.of(context).pushNamed('/tickets'),
-                  ),
-                  _QuickActionButton(
-                    icon: Icons.person_add_alt_1,
-                    label: 'Ziyaretçi',
-                    onTap: () => Navigator.of(context).pushNamed('/visitors'),
-                  ),
-                  _QuickActionButton(
-                    icon: Icons.how_to_vote,
-                    label: 'Oyla',
-                    onTap: () => Navigator.of(context).pushNamed('/polls'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              // Recent tickets
-              if (provider.tickets.isNotEmpty) ...[
-                _SectionHeader(
-                  title: '📋 Son Talepler',
-                  actionText: 'Tümü',
-                  onAction: () => Navigator.of(context).pushNamed('/tickets'),
-                ),
-                const SizedBox(height: 12),
-                ...provider.tickets.take(2).map((ticket) {
-                  return _TicketCard(ticket: ticket);
-                }),
-              ],
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 }
 
-class _SummaryCard extends StatelessWidget {
-  final IconData icon;
-  final Color iconColor;
-  final String title;
-  final String value;
-  final String subtitle;
-  final String buttonText;
-  final VoidCallback? onButtonPressed;
+class _DebtSummaryCard extends StatelessWidget {
+  final double totalDebt;
+  final NumberFormat currencyFormat;
+  final VoidCallback onPayNow;
+  final VoidCallback onHistory;
 
-  const _SummaryCard({
-    required this.icon,
-    required this.iconColor,
-    required this.title,
-    required this.value,
-    required this.subtitle,
-    required this.buttonText,
-    this.onButtonPressed,
+  const _DebtSummaryCard({
+    required this.totalDebt,
+    required this.currencyFormat,
+    required this.onPayNow,
+    required this.onHistory,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: iconColor, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: AppColors.textSecondary,
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Toplam Borç',
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.account_balance_wallet,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            currencyFormat.format(totalDebt),
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 32,
+              fontWeight: FontWeight.w800, // Extra bold
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 4),
+          // Placeholder for due date, assuming static or from first due
+          Text(
+            'Son ödeme tarihi: 25 Şub 2026', // Ideally dynamic
+            style: TextStyle(
+              color: AppColors.textSecondary.withValues(alpha: 0.8),
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: onPayNow,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Hemen Öde',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Icon(Icons.arrow_forward_rounded, size: 20),
+                    ],
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: iconColor,
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: onButtonPressed,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: iconColor,
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+              const SizedBox(width: 12),
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: onHistory,
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppColors.border),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(
+                      Icons.history,
+                      color: AppColors.textPrimary,
+                      size: 24,
+                    ),
+                  ),
                 ),
-                child: Text(buttonText),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
       ),
+    );
+  }
+}
+
+class _QuickActionItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final Color iconColor;
+  final VoidCallback onTap;
+
+  const _QuickActionItem({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.iconColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20), // Circular feel
+          child: Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.3), // Lighter background
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: iconColor, size: 28),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: const TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -331,7 +520,14 @@ class _SectionHeader extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: Theme.of(context).textTheme.titleMedium),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+        ),
         TextButton(onPressed: onAction, child: Text(actionText)),
       ],
     );
@@ -347,19 +543,33 @@ class _AnnouncementCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 8),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: AppColors.border),
+      ),
+      margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         onTap: onTap,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(
-          width: 8,
-          height: 40,
+          width: 48,
+          height: 48,
           decoration: BoxDecoration(
+            color: announcement.priority.index == 2
+                ? AppColors.error.withValues(alpha: 0.1)
+                : announcement.priority.index == 1
+                ? AppColors.warning.withValues(alpha: 0.1)
+                : AppColors.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            Icons.campaign_outlined,
             color: announcement.priority.index == 2
                 ? AppColors.error
                 : announcement.priority.index == 1
                 ? AppColors.warning
                 : AppColors.primary,
-            borderRadius: BorderRadius.circular(4),
           ),
         ),
         title: Text(
@@ -368,53 +578,21 @@ class _AnnouncementCard extends StatelessWidget {
             fontWeight: announcement.isRead
                 ? FontWeight.normal
                 : FontWeight.bold,
+            fontSize: 15,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        subtitle: Text(
-          DateFormat('dd MMM yyyy', 'tr_TR').format(announcement.publishDate),
-          style: Theme.of(context).textTheme.bodySmall,
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(
+            DateFormat('dd MMM yyyy', 'tr_TR').format(announcement.publishDate),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
         ),
-        trailing: const Icon(Icons.chevron_right),
-      ),
-    );
-  }
-}
-
-class _QuickActionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _QuickActionButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: 72,
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Column(
-          children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: AppColors.primary),
-            ),
-            const SizedBox(height: 8),
-            Text(label, style: Theme.of(context).textTheme.labelMedium),
-          ],
+        trailing: const Icon(
+          Icons.chevron_right,
+          color: AppColors.textTertiary,
         ),
       ),
     );
@@ -444,40 +622,43 @@ class _TicketCard extends StatelessWidget {
     }
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 8),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: AppColors.border),
+      ),
+      margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: statusColor.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Center(
-            child: Text(
-              ticket.categoryDisplayName.substring(0, 2),
-              style: const TextStyle(fontSize: 18),
-            ),
-          ),
-        ),
-        title: Text(ticket.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-        subtitle: Text(
-          '${ticket.statusDisplayName} • ${DateFormat('dd MMM').format(ticket.createdAt)}',
-          style: TextStyle(color: statusColor),
-        ),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          width: 48,
+          height: 48,
           decoration: BoxDecoration(
             color: statusColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Text(
-            ticket.statusDisplayName,
-            style: TextStyle(
-              color: statusColor,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+          child: Center(
+            child: Text(
+              ticket.categoryDisplayName.substring(0, 2),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: statusColor,
+              ),
             ),
+          ),
+        ),
+        title: Text(
+          ticket.title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4.0),
+          child: Text(
+            '${ticket.statusDisplayName} • ${DateFormat('dd MMM').format(ticket.createdAt)}',
+            style: TextStyle(color: statusColor, fontSize: 13),
           ),
         ),
       ),

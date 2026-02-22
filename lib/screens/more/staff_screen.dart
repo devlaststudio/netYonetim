@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
-import 'placeholder_screen.dart';
+import '../manager/ops/staff_roles_screen.dart';
 
 class StaffScreen extends StatelessWidget {
   const StaffScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const PlaceholderScreen(
-      title: 'Çalışan Kadrosu',
-      icon: Icons.engineering,
-    );
+    return const StaffRolesScreen();
   }
 }
