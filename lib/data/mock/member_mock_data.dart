@@ -10,7 +10,7 @@ class MemberMockData {
         unitNo: '01',
         status: MemberStatus.malik,
         phone: '(532) 100-00-00',
-        email: 'demo.a@yonetimcell.com',
+        email: 'demo.a@netyonetim.com',
         tcKimlik: '15713742864',
         gender: 'Erkek',
         education: 'Yüksek Lisans',
@@ -279,7 +279,7 @@ class MemberMockData {
         unitNo: '15',
         status: MemberStatus.malik,
         phone: '(532) 100-00-00',
-        email: 'demo.a@yonetimcell.com',
+        email: 'demo.a@netyonetim.com',
         tcKimlik: '15713742864', // Same TC as member-001
         gender: 'Erkek',
         education: 'Yüksek Lisans',
