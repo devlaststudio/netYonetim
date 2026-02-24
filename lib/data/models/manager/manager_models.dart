@@ -62,6 +62,8 @@ enum LegacyOccupancyType { owner, tenant }
 
 enum SchedulerFrequency { daily, weekly, monthly }
 
+enum ScheduledExecutionStatus { success, failed, skipped }
+
 enum ImportRowStatus { valid, warning, error }
 
 enum ReportTypeKey {
@@ -861,6 +863,30 @@ class AutoNotificationRule {
   }
 }
 
+class ScheduledChargeExecutionLog {
+  final String id;
+  final String ruleId;
+  final String ruleName;
+  final DateTime executedAt;
+  final String? batchId;
+  final String period;
+  final int unitCount;
+  final double totalAmount;
+  final ScheduledExecutionStatus status;
+
+  const ScheduledChargeExecutionLog({
+    required this.id,
+    required this.ruleId,
+    required this.ruleName,
+    required this.executedAt,
+    this.batchId,
+    required this.period,
+    required this.unitCount,
+    required this.totalAmount,
+    required this.status,
+  });
+}
+
 class ImportPreviewRow {
   final int rowNumber;
   final String block;
@@ -1308,6 +1334,30 @@ extension ReportTypeKeyLabel on ReportTypeKey {
         return 'POS / Banka Hareket';
       case ReportTypeKey.budgetComparison:
         return 'Butce Tahmini Fiili';
+    }
+  }
+}
+
+extension ScheduledExecutionStatusLabel on ScheduledExecutionStatus {
+  String get label {
+    switch (this) {
+      case ScheduledExecutionStatus.success:
+        return 'Basarili';
+      case ScheduledExecutionStatus.failed:
+        return 'Basarisiz';
+      case ScheduledExecutionStatus.skipped:
+        return 'Atlanmis';
+    }
+  }
+
+  Color get color {
+    switch (this) {
+      case ScheduledExecutionStatus.success:
+        return Colors.green;
+      case ScheduledExecutionStatus.failed:
+        return Colors.red;
+      case ScheduledExecutionStatus.skipped:
+        return Colors.orange;
     }
   }
 }

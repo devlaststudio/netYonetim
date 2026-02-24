@@ -3,15 +3,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:site_yonetimi_app/data/providers/manager_finance_provider.dart';
 import 'package:site_yonetimi_app/data/providers/manager_ops_provider.dart';
-import 'package:site_yonetimi_app/screens/manager/finance/charges_center_screen.dart';
+import 'package:site_yonetimi_app/screens/manager/finance/scheduled_charges_tracking_screen.dart';
 import 'package:site_yonetimi_app/screens/manager/finance/charges_wizard_codex_screen.dart';
 import 'package:site_yonetimi_app/screens/manager/ops/legacy_members_screen.dart';
 import 'package:site_yonetimi_app/screens/manager/ops/notifications_center_screen.dart';
 import 'package:site_yonetimi_app/screens/manager/ops/site_settings_screen.dart';
 
 void main() {
-  testWidgets('Charges screen renders auto charge rule section',
-      (WidgetTester tester) async {
+  testWidgets('Scheduled charges tracking screen renders KPI and tabs', (
+    WidgetTester tester,
+  ) async {
     final financeProvider = ManagerFinanceProvider();
     await tester.runAsync(() async {
       await financeProvider.loadMockData();
@@ -20,26 +21,20 @@ void main() {
     await tester.pumpWidget(
       ChangeNotifierProvider<ManagerFinanceProvider>.value(
         value: financeProvider,
-        child: const MaterialApp(home: ChargesCenterScreen()),
+        child: const MaterialApp(home: ScheduledChargesTrackingScreen()),
       ),
     );
 
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
 
-    final scrollable = find.byType(Scrollable).first;
-    await tester.scrollUntilVisible(
-      find.text('Otomatik Borclandirma Kurallari'),
-      250,
-      scrollable: scrollable,
-    );
-
-    expect(find.text('Otomatik Borclandirma Kurallari'), findsOneWidget);
-    expect(find.text('Aylik Aidat Tahakkuku'), findsOneWidget);
+    expect(find.text('Aktif Kurallar'), findsOneWidget);
+    expect(find.text('Çalışma Geçmişi'), findsOneWidget);
   });
 
-  testWidgets('Charges wizard codex renders method controls at top',
-      (WidgetTester tester) async {
+  testWidgets('Charges wizard codex renders method controls at top', (
+    WidgetTester tester,
+  ) async {
     final financeProvider = ManagerFinanceProvider();
     await tester.runAsync(() async {
       await financeProvider.loadMockData();
@@ -60,8 +55,9 @@ void main() {
     expect(find.text('Borclandirma Olustur'), findsOneWidget);
   });
 
-  testWidgets('Notifications screen renders auto notification rules',
-      (WidgetTester tester) async {
+  testWidgets('Notifications screen renders auto notification rules', (
+    WidgetTester tester,
+  ) async {
     final opsProvider = ManagerOpsProvider();
     await tester.runAsync(() async {
       await opsProvider.loadMockData();
@@ -81,36 +77,37 @@ void main() {
     expect(find.text('Aidat Vade Hatirlatma'), findsOneWidget);
   });
 
-  testWidgets('Site settings import preview supports row edit and revalidation',
-      (WidgetTester tester) async {
-    final opsProvider = ManagerOpsProvider();
-    await tester.runAsync(() async {
-      await opsProvider.loadMockData();
-      await opsProvider.prepareImportPreview(sourceName: 'test.xlsx');
-    });
+  testWidgets(
+    'Site settings import preview supports row edit and revalidation',
+    (WidgetTester tester) async {
+      final opsProvider = ManagerOpsProvider();
+      await tester.runAsync(() async {
+        await opsProvider.loadMockData();
+        await opsProvider.prepareImportPreview(sourceName: 'test.xlsx');
+      });
 
-    await tester.pumpWidget(
-      ChangeNotifierProvider<ManagerOpsProvider>.value(
-        value: opsProvider,
-        child: const MaterialApp(
-          routes: {
-            '/manager/legacy-members': _legacyMembersRoute,
-          },
-          home: SiteSettingsScreen(),
+      await tester.pumpWidget(
+        ChangeNotifierProvider<ManagerOpsProvider>.value(
+          value: opsProvider,
+          child: const MaterialApp(
+            routes: {'/manager/legacy-members': _legacyMembersRoute},
+            home: SiteSettingsScreen(),
+          ),
         ),
-      ),
-    );
+      );
 
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 400));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
 
-    expect(find.text('Aktarimi Tamamla'), findsOneWidget);
-    expect(find.text('Yeniden Kontrol Et'), findsOneWidget);
-    expect(find.byTooltip('Satiri Duzenle'), findsWidgets);
-  });
+      expect(find.text('Aktarimi Tamamla'), findsOneWidget);
+      expect(find.text('Yeniden Kontrol Et'), findsOneWidget);
+      expect(find.byTooltip('Satiri Duzenle'), findsWidgets);
+    },
+  );
 
-  testWidgets('Legacy members screen lists former member records',
-      (WidgetTester tester) async {
+  testWidgets('Legacy members screen lists former member records', (
+    WidgetTester tester,
+  ) async {
     final opsProvider = ManagerOpsProvider();
     await tester.runAsync(() async {
       await opsProvider.loadMockData();

@@ -67,11 +67,7 @@ class ManagerFinanceMockData {
     'Yakit ve Isinma',
   ];
 
-  static const List<String> blockOptions = [
-    'A Blok',
-    'B Blok',
-    'C Blok',
-  ];
+  static const List<String> blockOptions = ['A Blok', 'B Blok', 'C Blok'];
 
   static const List<String> unitGroupOptions = [
     'Tum Daireler',
@@ -108,10 +104,7 @@ class ManagerFinanceMockData {
         calculationMethod: method,
         scope: scope,
         distributionType: distribution,
-        methodParameters: {
-          'kaynak': method.label,
-          'anaTur': mainType.label,
-        },
+        methodParameters: {'kaynak': method.label, 'anaTur': mainType.label},
         targetIds: items.map((e) => e.unitId).toList(),
         period: '2026-${((index % 12) + 1).toString().padLeft(2, '0')}',
         dueDate: now.add(Duration(days: 8 + (index * 2))),
@@ -119,8 +112,8 @@ class ManagerFinanceMockData {
         status: index == 1
             ? ChargeBatchStatus.cancelled
             : index < 5
-                ? ChargeBatchStatus.posted
-                : ChargeBatchStatus.draft,
+            ? ChargeBatchStatus.posted
+            : ChargeBatchStatus.draft,
         createdAt: now.subtract(Duration(days: index * 5)),
       );
     });
@@ -160,8 +153,8 @@ class ManagerFinanceMockData {
         status: index == 3
             ? CollectionStatus.cancelled
             : index < 8
-                ? CollectionStatus.approved
-                : CollectionStatus.draft,
+            ? CollectionStatus.approved
+            : CollectionStatus.draft,
       );
     });
   }
@@ -217,8 +210,9 @@ class ManagerFinanceMockData {
   static List<BankMovement> getBankMovements() {
     final now = DateTime.now();
     return List.generate(14, (index) {
-      final account =
-          accounts.where((a) => a['id']!.contains('bank')).toList()[index % 2];
+      final account = accounts
+          .where((a) => a['id']!.contains('bank'))
+          .toList()[index % 2];
       return BankMovement(
         id: 'bm-$index',
         bankAccountId: account['id']!,
@@ -231,13 +225,13 @@ class ManagerFinanceMockData {
         description: index % 3 == 0
             ? 'Aidat odemesi A Blok ${index + 1}'
             : index % 3 == 1
-                ? 'Fatura odemesi #${200 + index}'
-                : 'Tanimsiz havale',
+            ? 'Fatura odemesi #${200 + index}'
+            : 'Tanimsiz havale',
         matchedStatus: index % 4 == 0
             ? MatchStatus.matched
             : index % 4 == 1
-                ? MatchStatus.suggested
-                : MatchStatus.unmatched,
+            ? MatchStatus.suggested
+            : MatchStatus.unmatched,
         matchedRef: index % 4 == 0 ? 'Tahsilat TB-${1000 + index}' : null,
       );
     });
@@ -279,11 +273,13 @@ class ManagerFinanceMockData {
         sourceType: incoming ? 'Tahsilat' : 'Gider',
         sourceId: incoming ? 'col-${index % 12}' : 'exp-${index % 12}',
         accountName: incoming ? 'Aidat Kasasi' : 'Nakit Kasa',
-        description:
-            incoming ? 'Daire tahsilati #$index' : 'Tedarikci odemesi #$index',
+        description: incoming
+            ? 'Daire tahsilati #$index'
+            : 'Tedarikci odemesi #$index',
         amount: (700 + index * 95).toDouble(),
-        direction:
-            incoming ? MovementDirection.incoming : MovementDirection.outgoing,
+        direction: incoming
+            ? MovementDirection.incoming
+            : MovementDirection.outgoing,
         isCancelled: index == 7,
       );
     });
@@ -368,6 +364,67 @@ class ManagerFinanceMockData {
         isActive: false,
         lastRunAt: now.subtract(const Duration(days: 16)),
         nextRunAt: now.add(const Duration(days: 4)),
+      ),
+    ];
+  }
+
+  static List<ScheduledChargeExecutionLog> getScheduledChargeExecutionLogs() {
+    final now = DateTime.now();
+    return [
+      ScheduledChargeExecutionLog(
+        id: 'log-1',
+        ruleId: 'acr-1',
+        ruleName: 'Aylik Aidat Tahakkuku',
+        executedAt: now.subtract(const Duration(days: 19)),
+        batchId: 'charge-batch-0',
+        period: '2026-01',
+        unitCount: 5,
+        totalAmount: 420000,
+        status: ScheduledExecutionStatus.success,
+      ),
+      ScheduledChargeExecutionLog(
+        id: 'log-2',
+        ruleId: 'acr-2',
+        ruleName: 'Asansor Bakim Fonu',
+        executedAt: now.subtract(const Duration(days: 5)),
+        batchId: 'charge-batch-1',
+        period: '2026-02',
+        unitCount: 5,
+        totalAmount: 58000,
+        status: ScheduledExecutionStatus.success,
+      ),
+      ScheduledChargeExecutionLog(
+        id: 'log-3',
+        ruleId: 'acr-1',
+        ruleName: 'Aylik Aidat Tahakkuku',
+        executedAt: now.subtract(const Duration(days: 49)),
+        batchId: 'charge-batch-2',
+        period: '2025-12',
+        unitCount: 5,
+        totalAmount: 420000,
+        status: ScheduledExecutionStatus.success,
+      ),
+      ScheduledChargeExecutionLog(
+        id: 'log-4',
+        ruleId: 'acr-3',
+        ruleName: 'Ek Temizlik Tahakkuku',
+        executedAt: now.subtract(const Duration(days: 16)),
+        batchId: null,
+        period: '2026-01',
+        unitCount: 0,
+        totalAmount: 0,
+        status: ScheduledExecutionStatus.failed,
+      ),
+      ScheduledChargeExecutionLog(
+        id: 'log-5',
+        ruleId: 'acr-2',
+        ruleName: 'Asansor Bakim Fonu',
+        executedAt: now.subtract(const Duration(days: 35)),
+        batchId: 'charge-batch-3',
+        period: '2026-01',
+        unitCount: 5,
+        totalAmount: 58000,
+        status: ScheduledExecutionStatus.success,
       ),
     ];
   }

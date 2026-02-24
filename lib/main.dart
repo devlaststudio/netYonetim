@@ -33,7 +33,7 @@ import 'screens/more/management_screen.dart';
 import 'screens/more/staff_screen.dart';
 import 'screens/more/polls_screen.dart';
 import 'screens/more/service_records_screen.dart';
-import 'screens/manager/finance/charges_center_screen.dart';
+
 import 'screens/manager/finance/collections_center_screen.dart';
 import 'screens/manager/finance/cash_expenses_screen.dart';
 import 'screens/manager/finance/transfers_screen.dart';
@@ -124,8 +124,8 @@ class SiteYonetApp extends StatelessWidget {
               '/accounting/budget': (context) => const BudgetScreen(),
               '/accounting/reports': (context) =>
                   const accounting_reports.ReportsScreen(),
+
               // Manager module routes
-              '/manager/charges': (context) => const ChargesCenterScreen(),
               '/manager/collections': (context) =>
                   const CollectionsCenterScreen(),
               '/manager/cash-expenses': (context) => const CashExpensesScreen(),

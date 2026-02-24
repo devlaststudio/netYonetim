@@ -25,13 +25,16 @@ class _PropertyDefinitionsScreenState extends State<PropertyDefinitionsScreen>
   // Block Add Form State
   final _blockNameController = TextEditingController();
   final _blockDescController = TextEditingController();
-  final _blockApartmentCountController = TextEditingController();
-  final _blockNumStartController = TextEditingController();
-  final _blockNumEndController = TextEditingController();
-  final _blockSingleNumController = TextEditingController();
-  final _blockMetreKareController = TextEditingController();
-  String _selectedApartmentType = '2+1';
-  bool _useNumberRange = true; // true = range, false = single
+
+  // Unit-group entry row controllers
+  final _entryMetreKareController = TextEditingController();
+  final _entryArsaPayiController = TextEditingController();
+  final _entryDaireNoController = TextEditingController();
+  String _entrySelectedType = '2+1';
+  String _entrySelectedAidatGrubu = 'Daire';
+
+  // List of added unit groups
+  final List<_UnitGroupEntry> _unitGroups = [];
 
   @override
   void initState() {
@@ -159,29 +162,30 @@ class _PropertyDefinitionsScreenState extends State<PropertyDefinitionsScreen>
       'Ofis',
       'Dükkan',
     ];
+    final aidatGroups = ['Daire', 'Dükkan', 'Yönetici', 'Ofis'];
+    final totalUnits = _unitGroups.fold<int>(
+      0,
+      (sum, g) => sum + g.daireNolari.length,
+    );
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.all(20.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // --- Title ---
-          const Text(
+          Text(
             'YENİ BLOK EKLE',
             style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
               letterSpacing: 1.1,
             ),
           ),
-          const SizedBox(height: 20),
-
-          // --- Row 1: Blok Adı + Açıklama ---
+          const SizedBox(height: 14),
           LayoutBuilder(
             builder: (context, constraints) {
-              final isSmall = constraints.maxWidth < 600;
-              if (isSmall) {
+              if (constraints.maxWidth < 600) {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -190,7 +194,7 @@ class _PropertyDefinitionsScreenState extends State<PropertyDefinitionsScreen>
                       'Örn: A Blok',
                       _blockNameController,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     _blockTextField(
                       'Açıklama',
                       'Opsiyonel',
@@ -209,7 +213,7 @@ class _PropertyDefinitionsScreenState extends State<PropertyDefinitionsScreen>
                       _blockNameController,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
                   Expanded(
                     flex: 3,
                     child: _blockTextField(
@@ -222,81 +226,282 @@ class _PropertyDefinitionsScreenState extends State<PropertyDefinitionsScreen>
               );
             },
           ),
-          const SizedBox(height: 16),
-
-          // --- Row 2: Daire Sayısı + Daire Tipi ---
+          const SizedBox(height: 14),
+          const Divider(),
+          const SizedBox(height: 8),
+          Text(
+            'DAİRE GRUBU EKLE',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+              letterSpacing: 1.1,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Her daire grubunu ayrı ayrı ekleyin (ör: 1+1 daireler, 2+1 daireler)',
+            style: TextStyle(fontSize: 11, color: AppColors.textTertiary),
+          ),
+          const SizedBox(height: 10),
           LayoutBuilder(
             builder: (context, constraints) {
-              final isSmall = constraints.maxWidth < 600;
-              if (isSmall) {
+              if (constraints.maxWidth < 700) {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _blockTextField(
-                      'Daire Sayısı *',
-                      'Örn: 24',
-                      _blockApartmentCountController,
-                      isNumber: true,
+                    Row(
+                      children: [
+                        Expanded(child: _buildTypeDropdown(apartmentTypes)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _blockTextField(
+                            'm²',
+                            'Örn: 120',
+                            _entryMetreKareController,
+                            isNumber: true,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _blockTextField(
+                            'Arsa Payı',
+                            'Örn: 2/77',
+                            _entryArsaPayiController,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(child: _buildAidatGrubuDropdown(aidatGroups)),
+                      ],
                     ),
-                    const SizedBox(height: 12),
-                    _blockTextField(
-                      'Metrekare (m²)',
-                      'Örn: 120',
-                      _blockMetreKareController,
-                      isNumber: true,
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _blockTextField(
+                            'Daire No (virgülle)',
+                            'Örn: 1, 2, 3, 5, 7',
+                            _entryDaireNoController,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 16),
+                          child: SizedBox(
+                            height: 34,
+                            child: ElevatedButton.icon(
+                              onPressed: _addUnitGroup,
+                              icon: const Icon(Icons.add, size: 16),
+                              label: const Text(
+                                'Ekle',
+                                style: TextStyle(fontSize: 13),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 12),
-                    _buildApartmentTypeSelector(apartmentTypes),
                   ],
                 );
               }
               return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   SizedBox(
-                    width: 160,
-                    child: _blockTextField(
-                      'Daire Sayısı *',
-                      'Örn: 24',
-                      _blockApartmentCountController,
-                      isNumber: true,
-                    ),
+                    width: 100,
+                    child: _buildTypeDropdown(apartmentTypes),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 8),
                   SizedBox(
-                    width: 160,
+                    width: 90,
                     child: _blockTextField(
-                      'Metrekare (m²)',
+                      'm²',
                       'Örn: 120',
-                      _blockMetreKareController,
+                      _entryMetreKareController,
                       isNumber: true,
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(child: _buildApartmentTypeSelector(apartmentTypes)),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 100,
+                    child: _blockTextField(
+                      'Arsa Payı',
+                      'Örn: 2/77',
+                      _entryArsaPayiController,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 110,
+                    child: _buildAidatGrubuDropdown(aidatGroups),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _blockTextField(
+                      'Daire No (virgülle)',
+                      'Örn: 1, 2, 3, 5',
+                      _entryDaireNoController,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 1),
+                    child: SizedBox(
+                      height: 34,
+                      child: ElevatedButton.icon(
+                        onPressed: _addUnitGroup,
+                        icon: const Icon(Icons.add, size: 16),
+                        label: const Text(
+                          'Ekle',
+                          style: TextStyle(fontSize: 13),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               );
             },
           ),
+          if (_unitGroups.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.06),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(10),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        _tableHeader('Tip', flex: 1),
+                        _tableHeader('m²', flex: 1),
+                        _tableHeader('Arsa Payı', flex: 1),
+                        _tableHeader('Aidat Gr.', flex: 1),
+                        _tableHeader('Daire No', flex: 3),
+                        _tableHeader('Adet', flex: 1),
+                        const SizedBox(width: 32),
+                      ],
+                    ),
+                  ),
+                  ...List.generate(_unitGroups.length, (i) {
+                    final g = _unitGroups[i];
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          top: BorderSide(color: AppColors.border, width: 0.5),
+                        ),
+                        color: i.isEven
+                            ? Colors.white
+                            : const Color(0xFFFAFBFC),
+                      ),
+                      child: Row(
+                        children: [
+                          _tableCell(g.daireTipi, flex: 1, bold: true),
+                          _tableCell('${g.metreKare} m²', flex: 1),
+                          _tableCell(g.arsaPayi, flex: 1),
+                          _tableCell(g.aidatGrubu, flex: 1),
+                          _tableCell(g.daireNolari.join(', '), flex: 3),
+                          _tableCell(
+                            '${g.daireNolari.length}',
+                            flex: 1,
+                            bold: true,
+                            color: AppColors.primary,
+                          ),
+                          SizedBox(
+                            width: 32,
+                            child: IconButton(
+                              onPressed: () =>
+                                  setState(() => _unitGroups.removeAt(i)),
+                              icon: const Icon(Icons.close, size: 16),
+                              color: AppColors.error,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                minWidth: 28,
+                                minHeight: 28,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.04),
+                      borderRadius: const BorderRadius.vertical(
+                        bottom: Radius.circular(10),
+                      ),
+                      border: Border(top: BorderSide(color: AppColors.border)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(
+                          'Toplam: $totalUnits daire',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
-
-          // --- Row 3: Daire Numarası Mode + Inputs ---
-          _buildApartmentNumberSection(),
-          const SizedBox(height: 24),
-
-          // --- Save Button ---
           Align(
             alignment: Alignment.centerRight,
             child: SizedBox(
-              height: 48,
+              height: 36,
               child: ElevatedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.add_circle, size: 20),
-                label: const Text('Bloğu Kaydet'),
+                onPressed: _unitGroups.isEmpty ? null : () {},
+                icon: const Icon(Icons.save_outlined, size: 16),
+                label: Text(
+                  'Bloğu Kaydet${totalUnits > 0 ? ' ($totalUnits daire)' : ''}',
+                  style: const TextStyle(fontSize: 13),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF8BC34A),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  disabledBackgroundColor: Colors.grey.shade300,
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -304,22 +509,19 @@ class _PropertyDefinitionsScreenState extends State<PropertyDefinitionsScreen>
               ),
             ),
           ),
-
-          const SizedBox(height: 32),
-          const Divider(),
           const SizedBox(height: 24),
-
-          // --- Registered Blocks ---
-          const Text(
+          const Divider(),
+          const SizedBox(height: 18),
+          Text(
             'KAYITLI BLOKLAR',
             style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
               letterSpacing: 1.1,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Wrap(
             spacing: 16,
             runSpacing: 16,
@@ -328,7 +530,7 @@ class _PropertyDefinitionsScreenState extends State<PropertyDefinitionsScreen>
                 .map((b) {
                   return Container(
                     width: 240,
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: AppColors.surface,
                       borderRadius: BorderRadius.circular(12),
@@ -351,8 +553,8 @@ class _PropertyDefinitionsScreenState extends State<PropertyDefinitionsScreen>
                               child: Text(
                                 b,
                                 style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
                                   color: AppColors.textPrimary,
                                 ),
                               ),
@@ -361,66 +563,68 @@ class _PropertyDefinitionsScreenState extends State<PropertyDefinitionsScreen>
                               onTap: () {},
                               child: const Icon(
                                 Icons.delete_outline,
-                                size: 20,
+                                size: 18,
                                 color: AppColors.error,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         Row(
-                          children: [
-                            const Icon(
+                          children: const [
+                            Icon(
                               Icons.door_front_door_outlined,
-                              size: 14,
+                              size: 13,
                               color: AppColors.textSecondary,
                             ),
-                            const SizedBox(width: 4),
-                            const Text(
+                            SizedBox(width: 4),
+                            Text(
                               'Daire: 24',
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 11,
                                 color: AppColors.textSecondary,
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            const Icon(
-                              Icons.format_list_numbered,
-                              size: 14,
+                            SizedBox(width: 10),
+                            Icon(
+                              Icons.landscape_outlined,
+                              size: 13,
                               color: AppColors.textSecondary,
                             ),
-                            const SizedBox(width: 4),
-                            const Text(
-                              '1-24',
+                            SizedBox(width: 4),
+                            Text(
+                              'Arsa: 1/48',
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 11,
                                 color: AppColors.textSecondary,
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Container(
+                        Wrap(
+                          spacing: 4,
+                          runSpacing: 4,
+                          children: ['2+1', '3+1'].map((t) {
+                            return Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
+                                horizontal: 6,
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
                                 color: AppColors.primary.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(4),
                               ),
-                              child: const Text(
-                                '2+1',
-                                style: TextStyle(
-                                  fontSize: 11,
+                              child: Text(
+                                t,
+                                style: const TextStyle(
+                                  fontSize: 10,
                                   fontWeight: FontWeight.bold,
                                   color: AppColors.primary,
                                 ),
                               ),
-                            ),
-                          ],
+                            );
+                          }).toList(),
                         ),
                       ],
                     ),
@@ -433,7 +637,196 @@ class _PropertyDefinitionsScreenState extends State<PropertyDefinitionsScreen>
     );
   }
 
-  // --- Block form helpers ---
+  void _addUnitGroup() {
+    final daireNoText = _entryDaireNoController.text.trim();
+    final metreKare = _entryMetreKareController.text.trim();
+    final arsaPayi = _entryArsaPayiController.text.trim();
+    if (daireNoText.isEmpty || metreKare.isEmpty || arsaPayi.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Lütfen tüm alanları doldurun.'),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+      return;
+    }
+    final daireNolari = daireNoText
+        .split(',')
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toList();
+    if (daireNolari.isEmpty) return;
+    setState(() {
+      _unitGroups.add(
+        _UnitGroupEntry(
+          daireTipi: _entrySelectedType,
+          metreKare: metreKare,
+          arsaPayi: arsaPayi,
+          aidatGrubu: _entrySelectedAidatGrubu,
+          daireNolari: daireNolari,
+        ),
+      );
+      _entryDaireNoController.clear();
+      _entryMetreKareController.clear();
+      _entryArsaPayiController.clear();
+    });
+  }
+
+  Widget _buildTypeDropdown(List<String> types) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Daire Tipi',
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
+            color: AppColors.textSecondary,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          height: 34,
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF1F3F5),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _entrySelectedType,
+              isExpanded: true,
+              icon: const Icon(Icons.keyboard_arrow_down, size: 18),
+              style: const TextStyle(
+                fontSize: 13,
+                color: AppColors.textPrimary,
+              ),
+              items: types
+                  .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+                  .toList(),
+              onChanged: (v) {
+                if (v != null) setState(() => _entrySelectedType = v);
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAidatGrubuDropdown(List<String> groups) {
+    const groupMeta = {
+      'Daire': {'icon': Icons.apartment, 'color': Color(0xFF4A90D9)},
+      'Dükkan': {'icon': Icons.storefront, 'color': Color(0xFFE8913A)},
+      'Yönetici': {'icon': Icons.admin_panel_settings, 'color': Color(0xFF9C5EC7)},
+      'Ofis': {'icon': Icons.business_center, 'color': Color(0xFF2BA89D)},
+    };
+
+    Widget buildItem(String g, {bool dense = false}) {
+      final meta = groupMeta[g];
+      final color = (meta?['color'] as Color?) ?? AppColors.primary;
+      final icon = (meta?['icon'] as IconData?) ?? Icons.group;
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: dense ? 6 : 8,
+            height: dense ? 6 : 8,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          SizedBox(width: dense ? 4 : 6),
+          Icon(icon, size: dense ? 13 : 15, color: color),
+          SizedBox(width: dense ? 3 : 5),
+          Text(g, style: TextStyle(fontSize: dense ? 12 : 13, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Aidat Grubu', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12, color: AppColors.textSecondary)),
+        const SizedBox(height: 4),
+        Container(
+          height: 34,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF1F3F5),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _entrySelectedAidatGrubu,
+              isExpanded: true,
+              icon: const Icon(Icons.keyboard_arrow_down, size: 16),
+              selectedItemBuilder: (context) {
+                return groups.map((g) => Align(alignment: Alignment.centerLeft, child: buildItem(g, dense: true))).toList();
+              },
+              items: groups.map((g) {
+                final meta = groupMeta[g];
+                final color = (meta?['color'] as Color?) ?? AppColors.primary;
+                final icon = (meta?['icon'] as IconData?) ?? Icons.group;
+                return DropdownMenuItem(
+                  value: g,
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 8, height: 8,
+                        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(icon, size: 16, color: color),
+                      const SizedBox(width: 8),
+                      Text(g, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                );
+              }).toList(),
+              onChanged: (v) { if (v != null) setState(() => _entrySelectedAidatGrubu = v); },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _tableHeader(String text, {int flex = 1}) {
+    return Expanded(
+      flex: flex,
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: AppColors.textSecondary,
+        ),
+      ),
+    );
+  }
+
+  Widget _tableCell(
+    String text, {
+    int flex = 1,
+    bool bold = false,
+    Color? color,
+  }) {
+    return Expanded(
+      flex: flex,
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: bold ? FontWeight.w600 : FontWeight.w400,
+          color: color ?? AppColors.textPrimary,
+        ),
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
 
   Widget _blockTextField(
     String label,
@@ -446,18 +839,20 @@ class _PropertyDefinitionsScreenState extends State<PropertyDefinitionsScreen>
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
-            color: AppColors.textPrimary,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
+            color: AppColors.textSecondary,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 4),
         TextField(
           controller: controller,
           keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+          style: const TextStyle(fontSize: 13),
           decoration: InputDecoration(
             hintText: hint,
+            hintStyle: TextStyle(fontSize: 13, color: AppColors.textSecondary),
             filled: true,
             fillColor: const Color(0xFFF1F3F5),
             border: OutlineInputBorder(
@@ -469,229 +864,13 @@ class _PropertyDefinitionsScreenState extends State<PropertyDefinitionsScreen>
               borderSide: const BorderSide(color: AppColors.border),
             ),
             contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
+              horizontal: 12,
+              vertical: 8,
             ),
+            isDense: true,
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildApartmentTypeSelector(List<String> types) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Daire Tipi',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: types.map((type) {
-            final isSelected = _selectedApartmentType == type;
-            return ChoiceChip(
-              label: Text(type),
-              selected: isSelected,
-              onSelected: (selected) {
-                if (selected) setState(() => _selectedApartmentType = type);
-              },
-              selectedColor: AppColors.primary.withOpacity(0.15),
-              backgroundColor: const Color(0xFFF1F3F5),
-              side: BorderSide(
-                color: isSelected ? AppColors.primary : AppColors.border,
-              ),
-              labelStyle: TextStyle(
-                color: isSelected ? AppColors.primary : AppColors.textPrimary,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                fontSize: 13,
-              ),
-              visualDensity: VisualDensity.compact,
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildApartmentNumberSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Text(
-              'Daire Numaraları',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const Spacer(),
-            // Toggle: Aralık / Tek Tek
-            Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFFF1F3F5),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _toggleButton(
-                    'Aralık',
-                    Icons.linear_scale,
-                    _useNumberRange,
-                    () {
-                      setState(() => _useNumberRange = true);
-                    },
-                  ),
-                  _toggleButton('Tek Tek', Icons.pin, !_useNumberRange, () {
-                    setState(() => _useNumberRange = false);
-                  }),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        if (_useNumberRange)
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final isSmall = constraints.maxWidth < 500;
-              if (isSmall) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _blockTextField(
-                      'Başlangıç No',
-                      'Örn: 1',
-                      _blockNumStartController,
-                      isNumber: true,
-                    ),
-                    const SizedBox(height: 12),
-                    _blockTextField(
-                      'Bitiş No',
-                      'Örn: 24',
-                      _blockNumEndController,
-                      isNumber: true,
-                    ),
-                  ],
-                );
-              }
-              return Row(
-                children: [
-                  Expanded(
-                    child: _blockTextField(
-                      'Başlangıç No',
-                      'Örn: 1',
-                      _blockNumStartController,
-                      isNumber: true,
-                    ),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 12),
-                    child: Text(
-                      '—',
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: _blockTextField(
-                      'Bitiş No',
-                      'Örn: 24',
-                      _blockNumEndController,
-                      isNumber: true,
-                    ),
-                  ),
-                ],
-              );
-            },
-          )
-        else
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Virgülle ayırarak daire numaralarını girin',
-                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 6),
-              TextField(
-                controller: _blockSingleNumController,
-                decoration: InputDecoration(
-                  hintText: 'Örn: 1, 2, 3, 5, 7',
-                  filled: true,
-                  fillColor: const Color(0xFFF1F3F5),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.border),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.border),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                ),
-              ),
-            ],
-          ),
-      ],
-    );
-  }
-
-  Widget _toggleButton(
-    String label,
-    IconData icon,
-    bool isActive,
-    VoidCallback onTap,
-  ) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: isActive
-              ? AppColors.primary.withOpacity(0.12)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          border: isActive
-              ? Border.all(color: AppColors.primary.withOpacity(0.3))
-              : null,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 16,
-              color: isActive ? AppColors.primary : AppColors.textTertiary,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-                color: isActive ? AppColors.primary : AppColors.textSecondary,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -1548,4 +1727,20 @@ class _PropertyDefinitionsScreenState extends State<PropertyDefinitionsScreen>
       ),
     );
   }
+}
+
+class _UnitGroupEntry {
+  final String daireTipi;
+  final String metreKare;
+  final String arsaPayi;
+  final String aidatGrubu;
+  final List<String> daireNolari;
+
+  _UnitGroupEntry({
+    required this.daireTipi,
+    required this.metreKare,
+    required this.arsaPayi,
+    required this.aidatGrubu,
+    required this.daireNolari,
+  });
 }

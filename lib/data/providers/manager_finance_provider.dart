@@ -18,6 +18,7 @@ class ManagerFinanceProvider extends ChangeNotifier {
   List<UnitStatementLine> _unitStatementLines = [];
   List<VendorLedgerEntry> _vendorStatementLines = [];
   List<AutoChargeRule> _autoChargeRules = [];
+  List<ScheduledChargeExecutionLog> _executionLogs = [];
 
   final Map<String, double> _accountBalances = {};
 
@@ -35,6 +36,7 @@ class ManagerFinanceProvider extends ChangeNotifier {
   List<UnitStatementLine> get unitStatementLines => _unitStatementLines;
   List<VendorLedgerEntry> get vendorStatementLines => _vendorStatementLines;
   List<AutoChargeRule> get autoChargeRules => _autoChargeRules;
+  List<ScheduledChargeExecutionLog> get executionLogs => _executionLogs;
   Map<String, double> get accountBalances => _accountBalances;
 
   double get totalChargeAmount =>
@@ -64,6 +66,7 @@ class ManagerFinanceProvider extends ChangeNotifier {
       _unitStatementLines = ManagerFinanceMockData.getUnitStatementLines();
       _vendorStatementLines = ManagerFinanceMockData.getVendorLedgerEntries();
       _autoChargeRules = ManagerFinanceMockData.getAutoChargeRules();
+      _executionLogs = ManagerFinanceMockData.getScheduledChargeExecutionLogs();
       _accountBalances
         ..clear()
         ..addEntries(
@@ -211,7 +214,28 @@ class ManagerFinanceProvider extends ChangeNotifier {
       nextRunAt: _nextRunFromFrequency(rule.frequency, now),
     );
 
+    _executionLogs.insert(
+      0,
+      ScheduledChargeExecutionLog(
+        id: 'log-${now.millisecondsSinceEpoch}',
+        ruleId: rule.id,
+        ruleName: rule.name,
+        executedAt: now,
+        batchId: 'charge-${now.millisecondsSinceEpoch}',
+        period: period,
+        unitCount: targetUnits.length,
+        totalAmount: rule.amount,
+        status: ScheduledExecutionStatus.success,
+      ),
+    );
+
     _lastUpdatedAt = now;
+    notifyListeners();
+  }
+
+  Future<void> deleteAutoChargeRule(String ruleId) async {
+    _autoChargeRules.removeWhere((rule) => rule.id == ruleId);
+    _lastUpdatedAt = DateTime.now();
     notifyListeners();
   }
 

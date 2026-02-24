@@ -14,7 +14,8 @@ import '../properties/property_list_screen.dart';
 
 import '../manager/finance/summary_screen.dart';
 import '../manager/finance/charges_wizard_codex_screen.dart';
-import '../manager/finance/charges_center_screen.dart';
+import '../manager/finance/scheduled_charges_tracking_screen.dart';
+
 import '../manager/finance/collections_center_screen.dart';
 import '../manager/finance/cash_expenses_screen.dart';
 import '../manager/finance/transfers_screen.dart';
@@ -59,8 +60,11 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
     _SayfaTanimi(sidebarIndex: 13, sayfa: const LegacyMembersScreen()),
 
     // ── Borçlandırma Merkezi ──
-    _SayfaTanimi(sidebarIndex: 20, sayfa: const ChargesCenterScreen()),
     _SayfaTanimi(sidebarIndex: 29, sayfa: const ChargesWizardCodexScreen()),
+    _SayfaTanimi(
+      sidebarIndex: 35,
+      sayfa: const ScheduledChargesTrackingScreen(),
+    ),
 
     // ── Finans ──
     _SayfaTanimi(sidebarIndex: 19, sayfa: const SummaryScreen()),

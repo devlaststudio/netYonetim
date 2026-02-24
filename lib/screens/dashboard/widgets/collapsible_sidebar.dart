@@ -54,14 +54,14 @@ class _CollapsibleSidebarState extends State<CollapsibleSidebar> {
       icon: Icons.request_quote_outlined,
       children: [
         MenuItem(
-          id: 20,
-          title: 'Borçlandırma Ekranı',
-          icon: Icons.request_quote_outlined,
+          id: 29,
+          title: 'Borçlandırma Oluştur',
+          icon: Icons.auto_awesome_outlined,
         ),
         MenuItem(
-          id: 29,
-          title: 'Borçlandırma Wizart Codex',
-          icon: Icons.auto_awesome_outlined,
+          id: 35,
+          title: 'Zamanlanmış Takip',
+          icon: Icons.schedule_outlined,
         ),
       ],
     ),
